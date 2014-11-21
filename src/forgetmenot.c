@@ -1,4 +1,5 @@
 #include <pebble.h>
+#include <time.h>
 
 static Window *window;
 static TextLayer *text_layer;
@@ -12,7 +13,8 @@ static void up_click_handler(ClickRecognizerRef recognizer, void *context) {
 }
 
 static void down_click_handler(ClickRecognizerRef recognizer, void *context) {
-  text_layer_set_text(text_layer, "Down");
+    APP_LOG(APP_LOG_LEVEL_DEBUG, "Down button pressed");
+    text_layer_set_text(text_layer, "Down");
 }
 
 static void click_config_provider(void *context) {
@@ -35,6 +37,11 @@ static void window_unload(Window *window) {
   text_layer_destroy(text_layer);
 }
 
+static void on_wakeup(int32_t wakeupid, int32_t cookie)
+{
+    APP_LOG(APP_LOG_LEVEL_DEBUG, "App woke up, wakeupid: %ld, cookie: %ld", wakeupid, cookie);
+}
+
 static void init(void) {
   window = window_create();
   window_set_click_config_provider(window, click_config_provider);
@@ -43,6 +50,13 @@ static void init(void) {
     .unload = window_unload,
   });
   const bool animated = true;
+  wakeup_service_subscribe(on_wakeup);
+  time_t now;
+  time(&now);
+  if (wakeup_schedule(now + 60, 42, true) < 0)
+  {
+      APP_LOG(APP_LOG_LEVEL_DEBUG, "Failed to schedule wakeup");
+  }
   window_stack_push(window, animated);
 }
 
