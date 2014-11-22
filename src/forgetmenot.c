@@ -12,7 +12,7 @@
 static Window *window;
 static TextLayer *text_layer;
 static size_t notification_interval = 1 * DAY;
-//static size_t notification_interval = 5;
+// static size_t notification_interval = 5;
 
 // forward declarations
 static void schedule(int32_t id, const char* message);
@@ -47,18 +47,17 @@ static void inbox_received_callback(DictionaryIterator *iterator, void *context)
         // Process this pair's key
         switch (t->key) {
             case MESSAGE_TEXT_KEY:
-                schedule(t->key, t->value->cstring);
                 snprintf(text_buffer, sizeof(text_buffer), "%s", t->value->cstring);
-            break;
+                break;
             case MESSAGE_TIME_KEY:
-                schedule(t->key, t->value->cstring);
                 snprintf(time_buffer, sizeof(time_buffer), "%s", t->value->cstring);
-            break;
+                break;
         }
 
         // Get next pair, if any
         t = dict_read_next(iterator);
     }
+    schedule(0, text_buffer);
     snprintf(message_buffer, sizeof(message_buffer), "Scheduled '%s' every day @%s ", text_buffer, time_buffer);
     notify(message_buffer, vibe);
 }
