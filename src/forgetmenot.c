@@ -6,7 +6,8 @@
 #define DAY 24 * HOUR
 #define MAX_ITEMS 10
 #define MAX_MESSAGE_LENGTH 128
-#define MESSAGE_KEY 0
+#define MESSAGE_TEXT_KEY 0
+#define MESSAGE_TIME_KEY 1
 
 static Window *window;
 static TextLayer *text_layer;
@@ -33,26 +34,34 @@ static void down_click_handler(ClickRecognizerRef recognizer, void *context) {
 }
 
 static void inbox_received_callback(DictionaryIterator *iterator, void *context) {
+    static bool vibe = true;
     APP_LOG(APP_LOG_LEVEL_INFO, "Message received!");
     // Get the first pair
     Tuple *t = dict_read_first(iterator);
 
+    static char text_buffer[MAX_MESSAGE_LENGTH];
+    static char time_buffer[MAX_MESSAGE_LENGTH];
+    static char message_buffer[MAX_MESSAGE_LENGTH];
     // Process all pairs present
     while(t != NULL) {
-        static char s_buffer[MAX_MESSAGE_LENGTH];
-        static bool vibe = true;
         // Process this pair's key
         switch (t->key) {
-            case MESSAGE_KEY:
+            case MESSAGE_TEXT_KEY:
                 schedule(t->key, t->value->cstring);
-                snprintf(s_buffer, sizeof(s_buffer), "Scheduled notifications for: '%s'", t->value->cstring);
-                notify(s_buffer, vibe);
+                snprintf(text_buffer, sizeof(text_buffer), "%s", t->value->cstring);
+            break;
+            case MESSAGE_TIME_KEY:
+                schedule(t->key, t->value->cstring);
+                snprintf(time_buffer, sizeof(time_buffer), "%s", t->value->cstring);
             break;
         }
 
         // Get next pair, if any
         t = dict_read_next(iterator);
-    }}
+    }
+    snprintf(message_buffer, sizeof(message_buffer), "Scheduled '%s' every day @%s ", text_buffer, time_buffer);
+    notify(message_buffer, vibe);
+}
 
 static void inbox_dropped_callback(AppMessageResult reason, void *context) {
     APP_LOG(APP_LOG_LEVEL_ERROR, "Message dropped!");

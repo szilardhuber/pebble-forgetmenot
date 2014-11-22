@@ -9,8 +9,8 @@ function init(e) {
     {
         var configuration = JSON.parse(decodeURIComponent(e.response));
         console.log('Configuration window returned: ', JSON.stringify(configuration));
-        Pebble.sendAppMessage( {"message": configuration },
-            function(e) {
+        Pebble.sendAppMessage( {"text": configuration.messageText, "time": configuration.time},
+        function(e) {
                 console.log('Successfully delivered message with transactionId='
                 + e.data.transactionId);
             },

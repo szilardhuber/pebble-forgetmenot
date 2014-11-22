@@ -9,7 +9,8 @@
     "watchface": false
   },
   "appKeys": {
-    "message": 0
+    "text": 0,
+    "time": 1
   },
   "resources": {
     "media": [
