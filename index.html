@@ -8,7 +8,14 @@
     <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen">
     <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print">
 
-    <title>Pebble-forgetmenot by szilardhuber</title>
+    <title>Forget Me Not by szilardhuber</title>
+    <script>
+        function saveSettings()
+        {
+            var message = document.getElementById("message").value;
+            location.href = 'pebblejs://close#' + encodeURIComponent(JSON.stringify(message));
+        }
+    </script>
   </head>
 
   <body>
@@ -19,7 +26,7 @@
 <a id="welcome-to-github-pages" class="anchor" href="#welcome-to-github-pages" aria-hidden="true"><span class="octicon octicon-link"></span></a>Forget Me Not</h3>
 
 <p>What shall I remind you of:</p>
-<input type="text">
-
+<input id="message" type="text">
+<button onclick="saveSettings()">Save</button>
   </body>
 </html>
