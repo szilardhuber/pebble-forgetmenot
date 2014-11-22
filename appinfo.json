@@ -1,8 +1,8 @@
 {
   "uuid": "c0ce2584-a5de-4001-b44f-2a3cfc02a10d",
-  "shortName": "forgetmenot",
-  "longName": "forgetmenot",
-  "companyName": "MakeAwesomeHappen",
+  "shortName": "Forget Me Not",
+  "longName": "Forget Me Not - Recurring friendly reminders",
+  "companyName": "szilardhuber",
   "versionCode": 1,
   "versionLabel": "1.0",
   "watchapp": {
@@ -13,5 +13,7 @@
   },
   "resources": {
     "media": []
-  }
+  },
+  "capabilities": [ "configurable"]
+
 }

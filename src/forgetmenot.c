@@ -4,6 +4,8 @@
 #define MINUTE 60
 #define HOUR 60 * MINUTE
 #define DAY 24 * HOUR
+#define MAX_ITEMS 10
+#define MAX_MESSAGE_LENGTH 128
 
 static Window *window;
 static TextLayer *text_layer;
@@ -45,9 +47,12 @@ static void window_load(Window *window) {
   layer_add_child(window_layer, text_layer_get_layer(text_layer));
 }
 
-static void notify(const char* message) {
+static void notify(const char* message, bool vibe) {
     light_enable_interaction();
-    vibes_short_pulse();
+    if (vibe)
+    {
+        vibes_short_pulse();
+    }
     text_layer_set_text(text_layer, message);
 }
 
@@ -68,11 +73,12 @@ void get_message(int32_t cookie, char * message, const size_t buffer_size)
 
 static void on_wakeup(int32_t wakeupid, int32_t cookie)
 {
+    static const bool vibe = true;
     APP_LOG(APP_LOG_LEVEL_DEBUG, "App woke up, wakeupid: %ld, cookie: %ld", wakeupid, cookie);
-    char * message = (char *)malloc(128);
-    get_message(cookie, message, 128);
+    char * message = (char *)malloc(MAX_MESSAGE_LENGTH);
+    get_message(cookie, message, MAX_MESSAGE_LENGTH);
     schedule(wakeupid, message);
-    notify(message);
+    notify(message, vibe);
     free(message);
 }
 
@@ -91,6 +97,34 @@ static void schedule(int32_t id, const char* message)
     }
 }
 
+static void perform_wakeup()
+{
+    int32_t wakeup_id;
+    int32_t cookie;
+    APP_LOG(APP_LOG_LEVEL_DEBUG, "App started due to wakeup event");
+    wakeup_get_launch_event(&wakeup_id, &cookie);
+    on_wakeup(wakeup_id, cookie);
+}
+
+// static void new_wakeup(const char * message)
+// {
+//     APP_LOG(APP_LOG_LEVEL_DEBUG, "Scheduling wakeup");
+//     schedule(42, message);
+// }
+
+static size_t count_wakeups()
+{
+    size_t ret = 0;
+    for (size_t i = 0; i < MAX_ITEMS; i++)
+    {
+        if (persist_exists(i))
+        {
+            ret++;
+        }
+    }
+    return ret;
+}
+
 static void init(void)
 {
     wakeup_service_subscribe(on_wakeup);
@@ -104,16 +138,15 @@ static void init(void)
     window_stack_push(window, animated);
     if (launch_reason() == APP_LAUNCH_WAKEUP)
     {
-        int32_t wakeup_id;
-        int32_t cookie;
-        APP_LOG(APP_LOG_LEVEL_DEBUG, "App started due to wakeup event");
-        wakeup_get_launch_event(&wakeup_id, &cookie);
-        on_wakeup(wakeup_id, cookie);
+        perform_wakeup();
     }
     else
     {
-        APP_LOG(APP_LOG_LEVEL_DEBUG, "Scheduling wakeup");
-        schedule(42, "Did you take your pills?");
+        static const bool vibe = false;
+        char message[128];
+        snprintf(message, 128, "You have %u notifications set up", count_wakeups());
+        notify(message, vibe);
+        // new_wakeup("Did you take your pills?");
     }
 }
 
