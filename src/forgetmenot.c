@@ -6,14 +6,16 @@
 #define DAY 24 * HOUR
 #define MAX_ITEMS 10
 #define MAX_MESSAGE_LENGTH 128
+#define MESSAGE_KEY 0
 
 static Window *window;
 static TextLayer *text_layer;
 static size_t notification_interval = 1 * DAY;
-// static size_t notification_interval = 5;
+//static size_t notification_interval = 5;
 
 // forward declarations
 static void schedule(int32_t id, const char* message);
+static void notify(const char* message, bool vibe);
 
 // handlers
 
@@ -29,6 +31,33 @@ static void down_click_handler(ClickRecognizerRef recognizer, void *context) {
     APP_LOG(APP_LOG_LEVEL_DEBUG, "Down button pressed");
     text_layer_set_text(text_layer, "Down");
 }
+
+static void inbox_received_callback(DictionaryIterator *iterator, void *context) {
+    APP_LOG(APP_LOG_LEVEL_INFO, "Message received!");
+    // Get the first pair
+    Tuple *t = dict_read_first(iterator);
+
+    // Process all pairs present
+    while(t != NULL) {
+        static char s_buffer[MAX_MESSAGE_LENGTH];
+        static bool vibe = true;
+        // Process this pair's key
+        switch (t->key) {
+            case MESSAGE_KEY:
+                schedule(t->key, t->value->cstring);
+                snprintf(s_buffer, sizeof(s_buffer), "Scheduled notifications for: '%s'", t->value->cstring);
+                notify(s_buffer, vibe);
+            break;
+        }
+
+        // Get next pair, if any
+        t = dict_read_next(iterator);
+    }}
+
+static void inbox_dropped_callback(AppMessageResult reason, void *context) {
+    APP_LOG(APP_LOG_LEVEL_ERROR, "Message dropped!");
+}
+
 
 static void click_config_provider(void *context) {
   window_single_click_subscribe(BUTTON_ID_SELECT, select_click_handler);
@@ -134,6 +163,9 @@ static void init(void)
         .load = window_load,
         .unload = window_unload,
     });
+    app_message_register_inbox_received(inbox_received_callback);
+    app_message_register_inbox_dropped(inbox_dropped_callback);
+    app_message_open(app_message_inbox_size_maximum(), app_message_outbox_size_maximum());
     const bool animated = true;
     window_stack_push(window, animated);
     if (launch_reason() == APP_LAUNCH_WAKEUP)
