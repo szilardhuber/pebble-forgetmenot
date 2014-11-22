@@ -12,7 +12,7 @@
     <script>
         function saveSettings()
         {
-            var text = document.getElementById("messageText").value;
+            var messageText = document.getElementById("messageText").value;
             var time = document.getElementById("time").value;
             var message = { 'text': messageText, 'time': time };
             location.href = 'pebblejs://close#' + encodeURIComponent(JSON.stringify(message));
