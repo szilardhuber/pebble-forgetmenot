@@ -12,7 +12,9 @@
     <script>
         function saveSettings()
         {
-            var message = document.getElementById("message").value;
+            var text = document.getElementById("messageText").value;
+            var time = document.getElementById("time").value;
+            var message = { 'text': messageText, 'time': time };
             location.href = 'pebblejs://close#' + encodeURIComponent(JSON.stringify(message));
         }
     </script>
@@ -25,8 +27,13 @@
         <h3>
 <a id="welcome-to-github-pages" class="anchor" href="#welcome-to-github-pages" aria-hidden="true"><span class="octicon octicon-link"></span></a>Forget Me Not</h3>
 
+
 <p>What shall I remind you of:</p>
-<input id="message" type="text">
-<button onclick="saveSettings()">Save</button>
+<input id="messageText" type="text"/>
+
+<p>When may I remind you each day?: </p>
+<input id="time" type="time"/>
+
+<p><button onclick="saveSettings()">Save</button></p>
   </body>
 </html>
